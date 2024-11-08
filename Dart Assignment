@@ -1,0 +1,188 @@
+import 'dart:io';
+
+
+enum BookStatus { available, borrowed }
+
+class Book {
+  String _title;
+  String _author;
+  String _isbn;
+  BookStatus _status;
+
+  Book(this._title, this._author, this._isbn, {this._status = BookStatus.available});
+
+  String get title => _title;
+  String get author => _author;
+  String get isbn => _isbn;
+  BookStatus get status => _status;
+
+  set title(String title) => _title = title;
+  set author(String author) => _author = author;
+  set isbn(String isbn) => _isbn = isbn;
+  set status(BookStatus status) => _status = status;
+
+  @override
+  String toString() {
+    return 'Title: $_title, Author: $_author, ISBN: $_isbn, Status: ${_status == BookStatus.available ? "Available" : "Borrowed"}';
+  }
+}
+
+// TextBook Class
+class TextBook extends Book {
+  String subjectArea;
+  int gradeLevel;
+
+  TextBook(String title, String author, String isbn, this.subjectArea, this.gradeLevel,
+      {BookStatus status = BookStatus.available})
+      : super(title, author, isbn, status: status);
+
+  @override
+  String toString() {
+    return '${super.toString()}, Subject Area: $subjectArea, Grade Level: $gradeLevel';
+  }
+}
+
+class BookManagementSystem {
+  List<Book> books = [];
+
+  // Add a new book
+  void addBook(Book book) {
+    books.add(book);
+    print("Book added successfully!");
+  }
+
+  // Remove a book
+  void removeBook(String isbn) {
+    books.removeWhere((book) => book.isbn == isbn);
+    print("Book removed successfully!");
+  }
+
+  // Update book status
+  void updateBookStatus(String isbn, BookStatus newStatus) {
+    for (var book in books) {
+      if (book.isbn == isbn) {
+        book.updateStatus(newStatus);
+        print("Book status updated successfully!");
+        return;
+      }
+    }
+    print("Book with ISBN $isbn not found.");
+  }
+
+  // Search by title
+  List<Book> searchByTitle(String title) {
+    return books.where((book) => book.title.toLowerCase().contains(title.toLowerCase())).toList();
+  }
+
+  // Search by author
+  List<Book> searchByAuthor(String author) {
+    return books.where((book) => book.author.toLowerCase().contains(author.toLowerCase())).toList();
+  }
+
+  // Filter books by status
+  List<Book> filterByStatus(BookStatus status) {
+    return books.where((book) => book.status == status).toList();
+  }
+}
+
+void displayMenu() {
+  print("\n--- Book Management System ---");
+  print("1. Add New Book");
+  print("2. Remove Book");
+  print("3. Update Book Status");
+  print("4. Search by Title");
+  print("5. Search by Author");
+  print("6. Filter books by status");
+  print("7. Exit");
+  print("Enter your choice (1-7):");
+}
+
+void main() {
+  var library = BookManagementSystem();
+  String? choice;
+
+  do {
+    displayMenu();
+    choice = stdin.readLineSync();
+
+    switch (choice) {
+      case "1":
+        print("Enter book title:");
+        String? title = stdin.readLineSync();
+        print("Enter author:");
+        String? author = stdin.readLineSync();
+        print("Enter ISBN:");
+        String? isbn = stdin.readLineSync();
+
+        if (title != null && author != null && isbn != null) {
+          library.addBook(Book(title, author, isbn));
+        } else {
+          print("Invalid input.");
+        }
+        break;
+
+      case "2":
+        print("Enter ISBN of the book to remove:");
+        String? isbn = stdin.readLineSync();
+        if (isbn != null) {
+          library.removeBook(isbn);
+        }
+        break;
+
+      case "3":
+        print("Enter ISBN of the book to update:");
+        String? isbn = stdin.readLineSync();
+        if (isbn != null) {
+          print("Enter new status (available/borrowed):");
+          String? status = stdin.readLineSync();
+          if (status == "available") {
+            library.updateBookStatus(isbn, BookStatus.available);
+          } else if (status == "borrowed") {
+            library.updateBookStatus(isbn, BookStatus.borrowed);
+          } else {
+            print("Invalid status.");
+          }
+        }
+        break;
+
+      case "4":
+        print("Enter title to search:");
+        String? title = stdin.readLineSync();
+        if (title != null) {
+          var results = library.searchByTitle(title);
+          results.forEach(print);
+        }
+        break;
+
+      case "5":
+        print("Enter author to search:");
+        String? author = stdin.readLineSync();
+        if (author != null) {
+          var results = library.searchByAuthor(author);
+          results.forEach(print);
+        }
+        break;
+
+      case "6":
+        print("Filter by status (available/borrowed):");
+        String? status = stdin.readLineSync();
+        if (status == "available") {
+          var results = library.filterByStatus(BookStatus.available);
+          results.forEach(print);
+        } else if (status == "borrowed") {
+          var results = library.filterByStatus(BookStatus.borrowed);
+          results.forEach(print);
+        } else {
+          print("Invalid status.");
+        }
+        break;
+
+      case "7":
+        print("Exiting the program.");
+        break;
+
+      default:
+        print("Please enter a number between 1 and 7.");
+    }
+  } while (choice != "7");
+}
